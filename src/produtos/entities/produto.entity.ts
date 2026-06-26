@@ -4,27 +4,42 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { Usuario } from 'src/usuarios/entities/usuario.entity';
+import { User } from '../../usuarios/entities/usuario.entity';
 
-@Entity('produtos')
-export class Produto {
+@Entity('product')
+export class Product {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  nome: string;
+  userId: number;
 
   @Column()
-  quantidade: number;
-
-  @Column('double')
-  preco: number;
+  name: string;
 
   @Column()
-  usuarioId: number;
+  quantity: number;
 
-  @ManyToOne(() => Usuario)
-  @JoinColumn({ name: 'usuarioId' })
-  usuario: Usuario;
+  @Column('decimal', { precision: 10, scale: 2 })
+  price: number;
+
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  created_at: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
+  })
+  updated_at: Date;
+
+  @ManyToOne(() => User) // Um usuário pode ter vários produtos
+  @JoinColumn({ name: 'userId' })
+  usuario: User;
 }

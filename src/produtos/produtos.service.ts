@@ -1,26 +1,56 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { CreateProdutoDto } from './dto/create-produto.dto';
 import { UpdateProdutoDto } from './dto/update-produto.dto';
+import { Repository } from 'typeorm';
+import { Product } from './entities/produto.entity';
 
 @Injectable()
 export class ProdutosService {
-  create(createProdutoDto: CreateProdutoDto) {
-    return 'This action adds a new produto';
+  constructor(
+    @InjectRepository(Product)
+    private readonly produtoRepository: Repository<Product>,
+  ) {}
+
+  async create(createProdutoDto: CreateProdutoDto): Promise<Product> {
+    const newProduct = this.produtoRepository.create(createProdutoDto);
+    return await this.produtoRepository.save(newProduct);
   }
 
-  findAll() {
-    return `This action returns all produtos`;
+  async findAll(): Promise<Product | Product[]> {
+    return await this.produtoRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} produto`;
+  async findOne(id: number): Promise<Product | null> {
+    const user = await this.produtoRepository.findOneBy({ id });
+
+    if (!user) {
+      throw new NotFoundException(`Produto com ID ${id} não encontrado`);
+    }
+
+    return user;
   }
 
-  update(id: number, updateProdutoDto: UpdateProdutoDto) {
-    return `This action updates a #${id} produto`;
+  async update(
+    id: number,
+    updateProdutoDto: UpdateProdutoDto,
+  ): Promise<Product> {
+    const product = await this.produtoRepository.preload({
+      id,
+      ...updateProdutoDto,
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Produto com ID ${id} não encontrado`);
+    }
+    return await this.produtoRepository.save(product);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} produto`;
+  async remove(id: number): Promise<void> {
+    const productToUpdate = await this.produtoRepository.delete({ id });
+
+    if (productToUpdate.affected === 0) {
+      throw new NotFoundException(`Produto com ID ${id} não encontrado`);
+    }
   }
 }

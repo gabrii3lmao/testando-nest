@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   HttpCode,
-  Next,
 } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
