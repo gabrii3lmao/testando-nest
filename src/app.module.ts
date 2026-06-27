@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsuariosModule } from './usuarios/usuarios.module';
 import { ProdutosModule } from './produtos/produtos.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -15,8 +16,9 @@ import { ProdutosModule } from './produtos/produtos.module';
       autoLoadEntities: true, // Carrega entidades automaticamente sem precisar listá-las uma a uma
       synchronize: true, // ATENÇÃO: Use apenas em desenvolvimento! Isso recria as tabelas. Em produção, use Migrations.
     }),
-    UsuariosModule,
     ProdutosModule,
+    AuthModule,
+    UsersModule,
   ],
 })
 export class AppModule {}
