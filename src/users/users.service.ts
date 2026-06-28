@@ -13,7 +13,7 @@ export class UserService {
     private readonly usuarioRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
     const salt = 10;
     const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
 
@@ -22,17 +22,15 @@ export class UserService {
       password: hashedPassword,
     });
 
-    return await this.usuarioRepository.save(newUser);
+    const user = await this.usuarioRepository.save(newUser);
+
+    const { password, ...userWithoutPassword } = user;
+
+    return userWithoutPassword;
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const usuario = await this.usuarioRepository.findOneBy({ email: email });
-
-    if (!usuario) {
-      throw new NotFoundException(`Usuário não encontrado`);
-    }
-
-    return usuario;
+    return await this.usuarioRepository.findOneBy({ email: email });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {

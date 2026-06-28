@@ -7,20 +7,23 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { ProdutosService } from './produtos.service';
 import { CreateProdutoDto } from './dto/create-produto.dto';
 import { UpdateProdutoDto } from './dto/update-produto.dto';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('produtos')
+@UseGuards(JwtAuthGuard)
 export class ProdutosController {
   constructor(private readonly produtosService: ProdutosService) {}
 
-  @UseGuards(AuthGuard('jwt'))
   @Post()
-  create(@Body() createProdutoDto: CreateProdutoDto) {
-    return this.produtosService.create(createProdutoDto);
+  create(@Body() createProdutoDto: CreateProdutoDto, @Req() req: Request) {
+    const user = req.user as { userId: string; email: string };
+    return this.produtosService.create({createProdutoDto});
   }
 
   @Get()
