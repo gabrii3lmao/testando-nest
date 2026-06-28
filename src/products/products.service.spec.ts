@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProdutosService } from './produtos.service';
+import { ProdutosService } from './products.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Product } from './entities/produto.entity';
+import { Product } from './entities/product.entity';
 import { NotFoundException } from '@nestjs/common';
 
 describe('ProdutosService', () => {
@@ -41,7 +41,7 @@ describe('ProdutosService', () => {
   describe('create', () => {
     it('should create a product', async () => {
       const createDto = {
-        userId: 1,
+        user_id: 1,
         name: 'Produto Teste',
         price: 99.99,
         quantity: 10,
@@ -60,53 +60,54 @@ describe('ProdutosService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all products', async () => {
+    it('should return only products belonging to the user', async () => {
+      const userId = 1;
       const products = [
-        { id: 1, userId: 1, name: 'Produto 1', price: 10, quantity: 5 },
-        { id: 2, userId: 1, name: 'Produto 2', price: 20, quantity: 3 },
+        { id: 1, user_id: 1, name: 'Produto 1', price: 10, quantity: 5 },
+        { id: 2, user_id: 1, name: 'Produto 2', price: 20, quantity: 3 },
       ];
 
       mockProdutoRepository.find.mockResolvedValue(products);
 
-      const result = await service.findAll();
+      const result = await service.findAll(userId);
 
-      expect(mockProdutoRepository.find).toHaveBeenCalled();
+      expect(mockProdutoRepository.find).toHaveBeenCalledWith({ where: { user_id: userId } });
       expect(result).toEqual(products);
     });
   });
 
   describe('findOne', () => {
-    it('should return a product by id', async () => {
+    it('should return a product by id and userId', async () => {
       const product = {
         id: 1,
-        userId: 1,
+        user_id: 1,
         name: 'Produto Teste',
         price: 99.99,
         quantity: 10,
       };
-
+ 
       mockProdutoRepository.findOneBy.mockResolvedValue(product);
-
-      const result = await service.findOne(1);
-
-      expect(mockProdutoRepository.findOneBy).toHaveBeenCalledWith({ id: 1 });
+ 
+      const result = await service.findOne(1, 1);
+ 
+      expect(mockProdutoRepository.findOneBy).toHaveBeenCalledWith({ id: 1, user_id: 1 });
       expect(result).toEqual(product);
     });
 
-    it('should throw NotFoundException when product is not found', async () => {
+    it('should throw NotFoundException when product is not found or belongs to another user', async () => {
       mockProdutoRepository.findOneBy.mockResolvedValue(null);
 
-      await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
-      expect(mockProdutoRepository.findOneBy).toHaveBeenCalledWith({ id: 999 });
+      await expect(service.findOne(999, 1)).rejects.toThrow(NotFoundException);
+      expect(mockProdutoRepository.findOneBy).toHaveBeenCalledWith({ id: 999, user_id: 1 });
     });
   });
 
   describe('update', () => {
-    it('should update a product', async () => {
-      const updateDto = { name: 'Produto Atualizado', price: 49.99 };
+    it('should update a product with userId verification', async () => {
+      const updateDto = { name: 'Produto Atualizado' };
       const preloadedProduct = {
         id: 1,
-        userId: 1,
+        user_id: 1,
         name: 'Produto Antigo',
         price: 99.99,
         quantity: 10,
@@ -116,10 +117,11 @@ describe('ProdutosService', () => {
       mockProdutoRepository.preload.mockResolvedValue(preloadedProduct);
       mockProdutoRepository.save.mockResolvedValue(savedProduct);
 
-      const result = await service.update(1, updateDto);
+      const result = await service.update(1, 1, updateDto);
 
       expect(mockProdutoRepository.preload).toHaveBeenCalledWith({
         id: 1,
+        user_id: 1,
         ...updateDto,
       });
       expect(mockProdutoRepository.save).toHaveBeenCalledWith(preloadedProduct);
@@ -129,26 +131,26 @@ describe('ProdutosService', () => {
     it('should throw NotFoundException when product to update is not found', async () => {
       mockProdutoRepository.preload.mockResolvedValue(null);
 
-      await expect(service.update(999, { name: 'Teste' })).rejects.toThrow(
+      await expect(service.update(999, 1, { name: 'Teste' })).rejects.toThrow(
         NotFoundException,
       );
     });
   });
 
   describe('remove', () => {
-    it('should delete a product', async () => {
+    it('should delete a product with userId verification', async () => {
       mockProdutoRepository.delete.mockResolvedValue({ affected: 1 });
 
-      await service.remove(1);
+      await service.remove(1, 1);
 
-      expect(mockProdutoRepository.delete).toHaveBeenCalledWith({ id: 1 });
+      expect(mockProdutoRepository.delete).toHaveBeenCalledWith({ id: 1, user_id: 1 });
     });
 
-    it('should throw NotFoundException when product to delete is not found', async () => {
+    it('should throw NotFoundException when product to delete is not found or belongs to another user', async () => {
       mockProdutoRepository.delete.mockResolvedValue({ affected: 0 });
 
-      await expect(service.remove(999)).rejects.toThrow(NotFoundException);
-      expect(mockProdutoRepository.delete).toHaveBeenCalledWith({ id: 999 });
+      await expect(service.remove(999, 1)).rejects.toThrow(NotFoundException);
+      expect(mockProdutoRepository.delete).toHaveBeenCalledWith({ id: 999, user_id: 1 });
     });
   });
 });

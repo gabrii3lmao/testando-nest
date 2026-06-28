@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProdutosModule } from './produtos/produtos.module';
+import { ProdutosModule } from './products/product.module';
 import { AuthModule } from './auth/auth.module';
 import { UsuariosModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
+import { ConsumersModule } from './consumers/consumers.module';
+import { TransactionsModule } from './transactions/transactions.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { ConfigModule } from '@nestjs/config';
     AuthModule,
     UsuariosModule,
     ConfigModule.forRoot(),
+    ConsumersModule,
+    TransactionsModule,
   ],
 })
 export class AppModule {}

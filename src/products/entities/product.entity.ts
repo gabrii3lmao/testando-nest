@@ -9,13 +9,13 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/usuario.entity';
 
-@Entity('product')
+@Entity('products')
 export class Product {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  userId: number;
+  user_id: number;
 
   @Column()
   name: string;
@@ -40,6 +40,6 @@ export class Product {
   updated_at: Date;
 
   @ManyToOne(() => User) // Um usuário pode ter vários produtos
-  @JoinColumn({ name: 'userId' })
-  usuario: User;
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 }
