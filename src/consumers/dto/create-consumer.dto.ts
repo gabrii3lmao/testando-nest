@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsString } from 'class-validator';
-import { IsCPF } from 'cpf-cnpj-validator/class-validator'; // <-- O "Cpf" é com letras minúsculas no final
+import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsCPF } from 'cpf-cnpj-validator/class-validator';
 
 export class CreateConsumerDto {
   @IsString()
@@ -10,6 +10,6 @@ export class CreateConsumerDto {
   cpf: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'O número de telefone é obrigatório.' })
-  phoneNumber: string;
+  @Length(11)
+  phone_number: string;
 }

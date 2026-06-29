@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import { ProdutosService } from './products.service';
 import { CreateProdutoDto } from './dto/create-product.dto';
@@ -21,10 +23,13 @@ export class ProdutosController {
 
   @Post()
   create(
-    @Body() createProdutoDto: Omit<CreateProdutoDto, 'user_id'>,
+    @Body() createProdutoDto: CreateProdutoDto,
     @CurrentUser() userId: number,
   ) {
-    return this.produtosService.create({ ...createProdutoDto, user_id: userId });
+    return this.produtosService.create({
+      ...createProdutoDto,
+      user_id: userId,
+    });
   }
 
   @Get()
@@ -47,6 +52,7 @@ export class ProdutosController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @CurrentUser() userId: number) {
     return this.produtosService.remove(+id, userId);
   }
